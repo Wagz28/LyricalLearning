@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LyricalLearning")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c0c2ef1971362a5ac4b423fed156a945d1d04225")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+40d37ff01455531baac8fd209aadf9b9bb3897ee")]
 [assembly: System.Reflection.AssemblyProductAttribute("LyricalLearning")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LyricalLearning")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
