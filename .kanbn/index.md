@@ -22,6 +22,7 @@ completedColumns:
 - [talk-to-reuben-about-what-the-30-days-aspect-of-program-cs-is](tasks/talk-to-reuben-about-what-the-30-days-aspect-of-program-cs-is.md)
 - [sprint-1](tasks/sprint-1.md)
 - [next-steps-for-ben](tasks/next-steps-for-ben.md)
+- [april-4th-plan-of-action](tasks/april-4th-plan-of-action.md)
 
 ## In Progress
 
