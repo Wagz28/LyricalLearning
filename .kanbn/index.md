@@ -20,7 +20,8 @@ completedColumns:
 
 - [create-complete-mainframe-task-list](tasks/create-complete-mainframe-task-list.md)
 - [sprint-1](tasks/sprint-1.md)
-- [next-steps-for-ben](tasks/next-steps-for-ben.md)
+- [ben-plan-of-action](tasks/ben-plan-of-action.md)
+- [april-4th-plan-of-action](tasks/april-4th-plan-of-action.md)
 
 ## In Progress
 
