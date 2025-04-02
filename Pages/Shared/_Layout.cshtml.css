@@ -4,11 +4,15 @@ for details on configuring this project to bundle and minify static web assets. 
 a.navbar-brand {
   white-space: normal;
   text-align: center;
-  word-break: break-all;
+  word-break: break-word;
+  font-weight: bold;
+  color: #ffffff;
 }
 
 a {
-  color: #0077cc;
+  color: #93c5fd;
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .btn-primary {
@@ -17,32 +21,33 @@ a {
   border-color: #1861ac;
 }
 
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+.nav-pills .nav-link.active, 
+.nav-pills .show > .nav-link {
   color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+  background: linear-gradient(to right, #2563eb, #1e3a8a);
+  border: none;
+  border-radius: 8px;
 }
 
 .border-top {
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 .border-bottom {
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
-}
-
-button.accept-policy {
-  font-size: 1rem;
-  line-height: inherit;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .footer {
   position: absolute;
   bottom: 0;
   width: 100%;
-  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-align: center;
   line-height: 60px;
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
