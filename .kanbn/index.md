@@ -19,9 +19,8 @@ completedColumns:
 ## Todo
 
 - [create-complete-mainframe-task-list](tasks/create-complete-mainframe-task-list.md)
-- [talk-to-reuben-about-what-the-30-days-aspect-of-program-cs-is](tasks/talk-to-reuben-about-what-the-30-days-aspect-of-program-cs-is.md)
 - [sprint-1](tasks/sprint-1.md)
-- [next-steps-for-ben](tasks/next-steps-for-ben.md)
+- [ben-plan-of-action](tasks/ben-plan-of-action.md)
 - [april-4th-plan-of-action](tasks/april-4th-plan-of-action.md)
 
 ## In Progress
@@ -36,3 +35,4 @@ completedColumns:
 - [install-kanbn](tasks/install-kanbn.md)
 - [investigating-flat-file-vs-db](tasks/investigating-flat-file-vs-db.md)
 - [set-up-and-install-net-structure](tasks/set-up-and-install-net-structure.md)
+- [talk-to-reuben-about-what-the-30-days-aspect-of-program-cs-is](tasks/talk-to-reuben-about-what-the-30-days-aspect-of-program-cs-is.md)
