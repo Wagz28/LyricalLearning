@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -25,6 +26,7 @@ app.MapRazorPages().WithStaticAssets();
 
 // ✅ Test Database Connection (Without Breaking the App)
 var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("DatabaseLogger");
+logger.LogInformation("✅ App started logging.");
 
 try
 {
