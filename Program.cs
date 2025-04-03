@@ -1,33 +1,35 @@
-// For Connection to the DB
 using Azure.Identity;
 using Microsoft.Data.SqlClient;
+using Azure.Core.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
+AzureEventSourceListener.CreateConsoleLogger(); // Debugging logs
 
-// Set up Azure Identity credential
 var credential = new DefaultAzureCredential();
-
-// Add services to the container.
-builder.Services.AddRazorPages();
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+try
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    using var connection = new SqlConnection(connectionString);
+    connection.AccessToken = credential.GetToken(
+        new Azure.Core.TokenRequestContext(["https://database.windows.net/.default"])
+    ).Token;
+
+    connection.Open();
+    Console.WriteLine("Database connection successful!");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Database connection failed: {ex.Message}");
 }
 
 app.UseHttpsRedirection();
-
 app.UseRouting();
-
 app.UseAuthorization();
-
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
-
+app.MapRazorPages();
 app.Run();
+
+
