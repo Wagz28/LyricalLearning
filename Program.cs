@@ -5,11 +5,14 @@ using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure logging
+// Clear default providers and add logging providers.
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-builder.Logging.AddAzureWebAppDiagnostics();
+builder.Logging.AddAzureWebAppDiagnostics();  // Ensure this package is installed.
 builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+// Add Razor Pages (or any other services)
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
@@ -27,9 +30,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.MapGet("/status", () => "Service is running!");
+app.MapRazorPages();
 
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("✅ App started logging.");
+// Log a test message.
+app.Logger.LogInformation("✅ App started logging.");
 
 app.Run();
