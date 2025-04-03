@@ -1,4 +1,11 @@
+// For Connection to the DB
+using Azure.Identity;
+using Microsoft.Data.SqlClient;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Set up Azure Identity credential
+var credential = new DefaultAzureCredential();
 
 // Add services to the container.
 builder.Services.AddRazorPages();
