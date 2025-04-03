@@ -1,15 +1,15 @@
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure logging to log to console and to Azure App Service's default logs
+// Configure logging
 builder.Logging.ClearProviders();
-builder.Logging.AddConsole();  // Add console logging (important for Azure App Service log stream)
-builder.Logging.SetMinimumLevel(LogLevel.Information); // Set log level to Information
-
-// Other services like database, MVC, etc.
-builder.Services.AddRazorPages();
+builder.Logging.AddConsole();
+builder.Logging.AddAzureWebAppDiagnostics();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 var app = builder.Build();
 
@@ -27,10 +27,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.MapRazorPages();
+app.MapGet("/status", () => "Service is running!");
 
-// Log that app started
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("✅ App started logging."); // Log that the app started
+logger.LogInformation("✅ App started logging.");
 
 app.Run();
