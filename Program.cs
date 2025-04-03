@@ -32,5 +32,6 @@ app.MapRazorPages();
 // Log that app started
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("✅ App started logging."); // Log that the app started
+System.Diagnostics.Trace.TraceError("✅ App started logging.");
 
 app.Run();
