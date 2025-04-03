@@ -1,12 +1,19 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Hosting;  // Make sure this is added
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+// Add logging to both console and Azure Web App Diagnostics (filesystem).
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();  // Logs to the console (useful during local dev)
+    logging.AddAzureWebAppDiagnostics();  // Logs to Azure file system (visible in Log Stream)
+});
 
 var app = builder.Build();
 
