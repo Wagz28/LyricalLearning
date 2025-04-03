@@ -1,55 +1,48 @@
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Read connection string
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// Add services to the container.
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Global error handling middleware
-app.UseExceptionHandler(errorApp =>
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
-    errorApp.Run(async context =>
-    {
-        context.Response.StatusCode = 500;
-        context.Response.ContentType = "application/json";
-
-        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-        if (exceptionHandlerPathFeature?.Error is not null)
-        {
-            await context.Response.WriteAsJsonAsync(new
-            {
-                error = "Internal Server Error",
-                details = exceptionHandlerPathFeature.Error.Message
-            });
-        }
-    });
-});
-
-// Check database connection on startup
-try
-{
-    using var connection = new SqlConnection(connectionString);
-    connection.Open();
-
-    using var command = new SqlCommand("SELECT GETDATE();", connection);
-    var result = command.ExecuteScalar();
-    Console.WriteLine($"✅ Database connected! Server time: {result}");
-}
-catch (SqlException sqlEx)
-{
-    Console.WriteLine($"❌ Database connection failed: {sqlEx.Message}");
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"❌ Unexpected error: {ex.Message}");
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthorization();
-app.MapRazorPages();
+
+app.MapStaticAssets();
+app.MapRazorPages().WithStaticAssets();
+
+// ✅ Test Database Connection (Without Breaking the App)
+var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("DatabaseLogger");
+
+try
+{
+    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+    using var connection = new SqlConnection(connectionString);
+    connection.Open();
+    logger.LogInformation("✅ Database connection successful!");
+}
+catch (SqlException sqlEx)
+{
+    logger.LogError(sqlEx, "❌ Database connection failed!");
+}
+catch (Exception ex)
+{
+    logger.LogError(ex, "❌ Unexpected error occurred.");
+}
+
+// Run the app
 app.Run();
