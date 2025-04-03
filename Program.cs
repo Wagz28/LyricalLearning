@@ -6,11 +6,12 @@ using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Clear default providers and add logging providers.
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-builder.Logging.AddAzureWebAppDiagnostics();  // Ensure this NuGet package is installed.
-builder.Logging.SetMinimumLevel(LogLevel.Information);
+builder.Logging.AddAzureWebAppDiagnostics();  // Ensure this NuGet package is installed
+builder.Logging.AddDebug();  // Add Debug logger as well
+builder.Logging.SetMinimumLevel(LogLevel.Trace);  // Set to Trace to capture everything
+
 
 // Add Razor Pages (or other services)
 builder.Services.AddRazorPages();
