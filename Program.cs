@@ -1,7 +1,6 @@
 using Microsoft.Data.SqlClient;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Hosting;  // Make sure this is added
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +31,7 @@ app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets();
 
 // ✅ Test Database Connection (Without Breaking the App)
-var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("DatabaseLogger");
+var logger = app.Services.GetRequiredService<ILogger<Program>>();  // Uses the DI container logger
 logger.LogInformation("✅ App started logging.");
 
 try
