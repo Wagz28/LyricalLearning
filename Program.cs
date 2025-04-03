@@ -1,56 +1,36 @@
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorPages();
+// Configure logging to log to console and to Azure App Service's default logs
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();  // Add console logging (important for Azure App Service log stream)
+builder.Logging.SetMinimumLevel(LogLevel.Information); // Set log level to Information
 
-// Add logging to both console and Azure Web App Diagnostics (filesystem).
-builder.Services.AddLogging(logging =>
-{
-    logging.AddConsole();  // Logs to the console (useful during local dev)
-    logging.AddAzureWebAppDiagnostics();  // Logs to Azure file system (visible in Log Stream)
-});
+// Other services like database, MVC, etc.
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
-app.UseAuthorization();
 
-app.MapStaticAssets();
-app.MapRazorPages().WithStaticAssets();
+app.MapRazorPages();
 
-// ✅ Test Database Connection (Without Breaking the App)
-var logger = app.Services.GetRequiredService<ILogger<Program>>();  // Uses the DI container logger
-logger.LogInformation("✅ App started logging.");
+// Log that app started
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("✅ App started logging."); // Log that the app started
 
-try
-{
-    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-    using var connection = new SqlConnection(connectionString);
-    connection.Open();
-    logger.LogInformation("✅ Database connection successful!");
-}
-catch (SqlException sqlEx)
-{
-    logger.LogError(sqlEx, "❌ Database connection failed!");
-}
-catch (Exception ex)
-{
-    logger.LogError(ex, "❌ Unexpected error occurred.");
-}
-
-// Run the app
 app.Run();
