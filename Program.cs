@@ -46,7 +46,9 @@ try
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
     logger.LogInformation("~ Connection String : {connectionString}", connectionString);
 
-    using var connection = new SqlConnection(connectionString);
+    // using var connection = new SqlConnection(connectionString);
+    // connection.Open();
+    using SqlConnection connection = new(connectionString);
     connection.Open();
     logger.LogInformation("✅ Database connection successful!");
 }
