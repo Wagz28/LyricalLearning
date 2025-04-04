@@ -44,6 +44,7 @@ try
     // Retrieve connection string from configuration
     string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    logger.LogInformation("~ Connection String : {connectionString}", connectionString);
 
     using var connection = new SqlConnection(connectionString);
     connection.Open();
