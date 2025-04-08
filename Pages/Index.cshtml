@@ -7,6 +7,50 @@
 <div class="text-center">
     <h1 class="display-4">Lyrical Learning</h1>
     <h2>The home of easy language learning by song!</h2>
-    <input type="text" class="form-control" placeholder="Focus me!">
-    <button class="btn">Click Me</button>
+    <input id="searchInput" type="text" class="form-control mb-3" placeholder="Search tiles...">
+    
+    <div id="tileContainer" class="d-flex flex-wrap justify-content-center gap-3">
+        <!-- Song tiles loaded here -->
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch the list of songs on page load
+            fetch('/api/songs')
+                .then(response => response.json())
+                .then(songs => {
+                    const tileContainer = document.getElementById('tileContainer');
+                    songs.forEach(song => {
+                        const tile = document.createElement('a');
+                        tile.href = `/song/${song.id}`;
+                        tile.className = 'tile card p-3';
+                        tile.dataset.title = song.title;
+                        tile.style.textDecoration = 'none';
+                        tile.style.color = '#000';
+                        tile.style.backgroundColor = '#f9f9f9';
+                        tile.style.border = '1px solid #ccc';
+                        tile.style.minWidth = '200px';
+                        tile.style.borderRadius = '12px';
+                        tile.style.boxShadow = '0 2px 6px rgba(0,0,0,0.1)';
+                        tile.style.cursor = 'pointer';
+                        tile.style.textAlign = 'center';
+                        tile.innerHTML = `<h3>${song.title}</h3>`;
+                        tileContainer.appendChild(tile);
+                    });
+                })
+                .catch(error => console.error('Error fetching songs:', error));
+        });
+
+        searchInput.addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase();
+            const tiles = document.querySelectorAll('.tile');
+
+            tiles.forEach(tile => {
+                const title = tile.dataset.title.toLowerCase();
+                tile.style.display = title.includes(searchTerm) ? 'block' : 'none';
+                });
+            });
+    </script>
+}
