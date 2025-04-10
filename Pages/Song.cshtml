@@ -1,0 +1,43 @@
+@page "/song/{id:int}"
+@model SongModel
+@{
+    ViewData["Title"] = "Lyrics";
+}
+
+<div class="container text-center mt-5" id="lyricsContainer" style="display: none;">
+    <a href="/" class="btn btn-secondary mb-4">← Back</a>
+    <h1 id="songTitle" class="display-4 mb-3"></h1>
+    <pre id="songLyrics" class="text-start mx-auto" style="white-space: pre-wrap; max-width: 600px; font-size: 1.2rem;"></pre>
+</div>
+
+<div class="container text-center mt-5" id="errorContainer" style="display: none;">
+    <a href="/" class="btn btn-secondary mb-4">← Back</a>
+    <h1 class="text-danger">Song not found</h1>
+    <p class="text-muted">We couldn't find the lyrics for that song. Maybe try another one?</p>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const pathSegments = window.location.pathname.split("/").filter(Boolean);
+            const songId = pathSegments[pathSegments.length - 1];
+
+            fetch(`/api/song/${songId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Song not found.");
+                    }
+                    return response.json();
+                })
+                .then(song => {
+                    document.getElementById('songTitle').innerText = song.title;
+                    document.getElementById('songLyrics').innerText = song.lyrics;
+                    document.getElementById('lyricsContainer').style.display = 'block';
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('errorContainer').style.display = 'block';
+                });
+        });
+    </script>
+}

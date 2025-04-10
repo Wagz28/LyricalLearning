@@ -18,13 +18,30 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+var songs = new List<Song>
 {
-    app.UseDeveloperExceptionPage();
-}
-else
+    new Song { Id = 1, Title = "Song One", Lyrics = "This is the lyrics for Song One." },
+    new Song { Id = 2, Title = "Song Two", Lyrics = "This is the lyrics for Song Two." },
+    new Song { Id = 3, Title = "Song Three", Lyrics = "This is the lyrics for Song Three." },
+    new Song { Id = 4, Title = "Song Four", Lyrics = "This is the lyrics for Song Four." }
+};
+
+// Route for loading song names
+app.MapGet("/api/songs", () => Results.Ok(songs));
+
+// Route for loading song lyrics
+app.MapGet("/api/song/{id}", (int id) =>
 {
-    app.UseExceptionHandler("/Home/Error");
+    var song = songs.FirstOrDefault(s => s.Id == id);
+    if (song == null) return Results.NotFound();
+    return Results.Ok(song);
+});
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -59,3 +76,11 @@ catch (Exception ex)
 }
 
 app.Run();
+
+// Song object
+public class Song
+{
+    public required int Id { get; set; }
+    public required string Title { get; set; }
+    public required string Lyrics { get; set; }
+}
