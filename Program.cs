@@ -27,14 +27,59 @@ var songs = new List<Song>
 };
 
 // Route for loading song names
-app.MapGet("/api/songs", () => Results.Ok(songs));
+app.MapGet("/api/songs", () => 
+{
+    var songList = new List<Song>();
+
+    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!; // Configure connection to default DB in Azure setup
+    using var connection = new SqlConnection(connectionString); // Connect
+    connection.Open(); // Open the DB
+
+    string sql = "SELECT Id, Title, Lyrics FROM Songs"; // Construct the query
+
+    using var command = new SqlCommand(sql, connection); // Convert to SQL Query
+    using var reader = command.ExecuteReader(); // Create reader for result returned by query
+
+    while (reader.Read())
+    {
+        songList.Add(new Song
+        {
+            Id = reader.GetInt32(0),
+            Title = reader.GetString(1),
+            Lyrics = reader.GetString(2)
+        });
+    }
+
+    return Results.Ok(songList);
+});
 
 // Route for loading song lyrics
 app.MapGet("/api/song/{id}", (int id) =>
 {
-    var song = songs.FirstOrDefault(s => s.Id == id);
-    if (song == null) return Results.NotFound();
-    return Results.Ok(song);
+    Song? song = null;
+
+    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+    using var connection = new SqlConnection(connectionString);
+    connection.Open();
+
+    string sql = "SELECT Id, Title, Lyrics FROM Songs WHERE Id = @Id";
+
+    using var command = new SqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@Id", id); //  Insert id value in secure way (mitigates SQL injection vunerability)
+
+    using var reader = command.ExecuteReader();
+
+    if (reader.Read())
+    {
+        song = new Song
+        {
+            Id = reader.GetInt32(0),
+            Title = reader.GetString(1),
+            Lyrics = reader.GetString(2)
+        };
+    }
+
+    return song is not null ? Results.Ok(song) : Results.NotFound();
 });
 
 // Configure the HTTP request pipeline.
