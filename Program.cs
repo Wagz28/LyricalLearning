@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,71 +17,142 @@ builder.Logging.SetMinimumLevel(LogLevel.Trace);  // Set to Trace to capture eve
 // Add Razor Pages (or other services)
 builder.Services.AddRazorPages();
 
+builder.Services.AddDbContext<SongsDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
 var app = builder.Build();
 
-var songs = new List<Song>
-{
-    new Song { Id = 1, Title = "Song One", Lyrics = "This is the lyrics for Song One." },
-    new Song { Id = 2, Title = "Song Two", Lyrics = "This is the lyrics for Song Two." },
-    new Song { Id = 3, Title = "Song Three", Lyrics = "This is the lyrics for Song Three." },
-    new Song { Id = 4, Title = "Song Four", Lyrics = "This is the lyrics for Song Four." }
-};
+// Remember which parts of the song are served with unique session IDs
+var usedWords = new Dictionary<Guid, List<int>>();
+var usedSentences = new Dictionary<Guid, List<int>>();
+var usedParagraphs = new Dictionary<Guid, List<int>>();
 
 // Route for loading song names
-app.MapGet("/api/songs", () => 
+app.MapGet("/api/songs", (SongsDbContext db) =>
 {
-    var songList = new List<Song>();
-
-    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!; // Configure connection to default DB in Azure setup
-    using var connection = new SqlConnection(connectionString); // Connect
-    connection.Open(); // Open the DB
-
-    string sql = "SELECT Id, Title, Lyrics FROM Songs"; // Construct the query
-
-    using var command = new SqlCommand(sql, connection); // Convert to SQL Query
-    using var reader = command.ExecuteReader(); // Create reader for result returned by query
-
-    while (reader.Read())
-    {
-        songList.Add(new Song
+    var songs = db.SentenceWords
+        .GroupBy(sw => new { sw.Song_Id, sw.Song_Name })
+        .Select(g => new
         {
-            Id = reader.GetInt32(0),
-            Title = reader.GetString(1),
-            Lyrics = reader.GetString(2)
-        });
-    }
+            Id = g.Key.Song_Id,
+            Title = g.Key.Song_Name
+        })
+        .OrderBy(s => s.Id)
+        .ToList();
 
-    return Results.Ok(songList);
+    return Results.Ok(songs);
 });
 
-// Route for loading song lyrics
-app.MapGet("/api/song/{id}", (int id) =>
+// Route for loading song words
+app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
 {
-    Song? song = null;
+    var songTitle = db.SentenceWords
+        .Where(sw => sw.Song_Id == song_id)
+        .Select(sw => sw.Song_Name)
+        .FirstOrDefault();
+    
+    var wordIds = db.SentenceWords
+        .Where(sw => sw.Song_Id == song_id)
+        .Select(sw => sw.Word_Id)
+        .Distinct()
+        .OrderBy(_ => Guid.NewGuid())
+        .Take(10)
+        .ToList();
 
-    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
-    using var connection = new SqlConnection(connectionString);
-    connection.Open();
+    var wordList = db.Words
+        .Where(w => wordIds.Contains(w.Id) && w.En != null)
+        .ToList();
 
-    string sql = "SELECT Id, Title, Lyrics FROM Songs WHERE Id = @Id";
+    var guid = Guid.NewGuid();
+    usedWords[guid] = wordList.Select(w => w.Id).ToList();
 
-    using var command = new SqlCommand(sql, connection);
-    command.Parameters.AddWithValue("@Id", id); //  Insert id value in secure way (mitigates SQL injection vunerability)
-
-    using var reader = command.ExecuteReader();
-
-    if (reader.Read())
+    return Results.Ok(new
     {
-        song = new Song
-        {
-            Id = reader.GetInt32(0),
-            Title = reader.GetString(1),
-            Lyrics = reader.GetString(2)
-        };
-    }
-
-    return song is not null ? Results.Ok(song) : Results.NotFound();
+        id = guid,
+        title = songTitle,
+        words = wordList.Select(w => w.En)
+    });
 });
+
+// Route for loading song sentences
+app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
+{
+    var songTitle = db.SentenceWords
+    .Where(sw => sw.Song_Id == song_id)
+    .Select(sw => sw.Song_Name)
+    .FirstOrDefault();
+
+    // Random rand = new Random();  
+    // int skipper = rand.Next(0, db.SentenceWords.Count()); 
+
+    var sentenceIds = db.SentenceWords
+        .Where(sw => sw.Song_Id == song_id)
+        .Select(sw => sw.Sentence_Id)
+        .Distinct()
+        .OrderBy(_ => Guid.NewGuid())
+        .Take(10)
+        .ToList();
+
+    var sentenceList = db.Sentences
+        .Where(s => sentenceIds.Contains(s.Id) && s.En != null)
+        .ToList();
+
+    var guid = Guid.NewGuid();
+    usedSentences[guid] = sentenceList.Select(s => s.Id).ToList();
+
+    return Results.Ok(new
+    {
+        id = guid,
+        title = songTitle,
+        sentences = sentenceList.Select(s => s.En)
+    });
+});
+
+// Route for loading song paragraph
+app.MapGet("/api/paragraph/{song_id}", (SongsDbContext db, int song_id) =>
+{
+    var songTitle = db.SentenceWords
+    .Where(sw => sw.Song_Id == song_id)
+    .Select(sw => sw.Song_Name)
+    .FirstOrDefault();
+    
+    var groupId = db.SentenceWords
+        .Where(sw => sw.Song_Id == song_id)
+        .Select(sw => sw.Group_Id)
+        .Distinct()
+        .OrderBy(_ => Guid.NewGuid())
+        .FirstOrDefault();
+
+    var sentenceIds = db.SentenceWords
+        .Where(sw => sw.Group_Id == groupId && sw.Song_Id == song_id)
+        .Select(sw => sw.Sentence_Id)
+        .ToList();
+
+    var paragraphSentences = db.Sentences
+        .Where(s => sentenceIds.Contains(s.Id) && s.En != null)
+        .OrderBy(s => s.Id)
+        .Select(s => s.En)
+        .ToList();
+
+    var guid = Guid.NewGuid();
+    usedParagraphs[guid] = sentenceIds;
+
+    return Results.Ok(new
+    {
+        id = guid,
+        title = songTitle,
+        paragraph = string.Join(" ", paragraphSentences)
+    });
+});
+
+
+
+
+
+
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -125,7 +197,6 @@ app.Run();
 // Song object
 public class Song
 {
-    public required int Id { get; set; }
-    public required string Title { get; set; }
-    public required string Lyrics { get; set; }
+    public int Id { get; set; }
+    public string Title { get; set; } = "";
 }

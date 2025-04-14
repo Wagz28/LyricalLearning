@@ -21,18 +21,31 @@
         document.addEventListener("DOMContentLoaded", function () {
             const pathSegments = window.location.pathname.split("/").filter(Boolean);
             const songId = pathSegments[pathSegments.length - 1];
+            const params = new URLSearchParams(window.location.search);
+            const mode = params.get('mode');
 
-            fetch(`/api/song/${songId}`)
+
+            fetch(`/api/${mode}/${songId}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error("Song not found.");
                     }
                     return response.json();
                 })
-                .then(song => {
-                    document.getElementById('songTitle').innerText = song.title;
-                    document.getElementById('songLyrics').innerText = song.lyrics;
-                    document.getElementById('lyricsContainer').style.display = 'block';
+                .then(data => {
+                    const title = document.getElementById('songTitle');
+                    const body = document.getElementById('songLyrics');
+                    const container = document.getElementById('lyricsContainer');
+
+                    title.innerText = mode.charAt(0).toUpperCase() + mode.slice(1) + ": " + data.title;
+
+                    if (mode === "paragraph") {
+                        body.innerText = data.paragraph;
+                    } else if (mode === "words" || mode === "sentences") {
+                        body.innerHTML = data[mode].join('\n');
+                    }
+
+                    container.style.display = 'block';
                 })
                 .catch(err => {
                     console.error(err);
