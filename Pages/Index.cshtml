@@ -14,6 +14,10 @@
     </div>
 </div>
 
+<div id="popup" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:white; border:1px solid #ccc; padding:2rem; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.2); z-index:1000;">
+    <div id="popupContent"></div>
+</div>
+
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -23,9 +27,9 @@
                 .then(songs => {
                     const tileContainer = document.getElementById('tileContainer');
                     songs.forEach(song => {
-                        const tile = document.createElement('a');
-                        tile.href = `/song/${song.id}`;
+                        const tile = document.createElement('button');
                         tile.className = 'tile card p-3';
+                        tile.dataset.songID = song.id.toString();
                         tile.dataset.title = song.title;
                         tile.style.textDecoration = 'none';
                         tile.style.color = '#000';
@@ -38,6 +42,12 @@
                         tile.style.textAlign = 'center';
                         tile.innerHTML = `<h3>${song.title}</h3>`;
                         tileContainer.appendChild(tile);
+
+                        tile.addEventListener('click', () => {
+                            const songId = tile.dataset.songID;
+                            const title = tile.dataset.title;
+                            openPopupWithSong(songId, title);
+                        });
                     });
                 })
                 .catch(error => console.error('Error fetching songs:', error));
@@ -52,5 +62,21 @@
                 tile.style.display = title.includes(searchTerm) ? 'block' : 'none';
                 });
             });
+        
+        function openPopupWithSong(id, title) {
+            popup = document.getElementById("popup")
+            popupText = document.getElementById("popupContent")
+
+            popupText.innerHTML = `
+                <h1>${title}</h1>
+                <h2>How would you like to start learning?</h2>
+                <button onclick="window.location.href = '/Song/${id}?mode=words'">Learn By Words</button>
+                <button onclick="window.location.href = '/Song/${id}?mode=sentences'">Learn By Sentences</button>
+                <button onclick="window.location.href = '/Song/${id}?mode=paragraph'">Learn By Paragraphs</button>
+            `;
+
+            popup.style.display = 'block';
+        }
+
     </script>
 }
