@@ -133,7 +133,7 @@ app.MapGet("/api/paragraph/{song_id}", (SongsDbContext db, int song_id) =>
     
     var paragraphSentences = new List<string> {};
     foreach(var id in sentenceList) {
-        paragraphSentences.Add(db.Sentences.Where(s => s.Id == id && s.Ru != null).Select(s => s.Ru).FirstOrDefault());
+        paragraphSentences.Add(db.Sentences.Where(s => s.Id == id && s.Ru != null).Select(s => s.Ru).FirstOrDefault() ?? "[missing]");
     }
 
     var guid = Guid.NewGuid();
