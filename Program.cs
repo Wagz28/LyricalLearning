@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices.Swift;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -124,25 +125,35 @@ app.MapGet("/api/paragraph/{song_id}", (SongsDbContext db, int song_id) =>
         .OrderBy(_ => Guid.NewGuid())
         .FirstOrDefault();
 
-    var sentenceIds = db.SentenceWords
-        .Where(sw => sw.Group_Id == groupId && sw.Song_Id == song_id)
+    var sentenceList = db.SentenceWords
+        .Where(sw => sw.Group_Id == groupId && sw.Song_Id == song_id && sw.Word_Pst == 1)
+        .OrderBy(sw => sw.Sentence_Pst)
         .Select(sw => sw.Sentence_Id)
         .ToList();
 
-    var paragraphSentences = db.Sentences
-        .Where(s => sentenceIds.Contains(s.Id) && s.En != null)
-        .OrderBy(s => s.Id)
-        .Select(s => s.En)
-        .ToList();
+    // var paragraphSentences = db.Sentences
+    //     .Where(s => 
+    //         sentences = []
+    //         foreach(id in sentenceList) {
+    //             sentenceList.append()
+    //     })
+    //     .OrderBy(_ => sentenceList.sentence_pst)
+    //     .Select(s => s.Ru)
+    //     .ToList();
+    
+    var paragraphSentences = new List<string> {};
+    foreach(var id in sentenceList) {
+        paragraphSentences.Add(db.Sentences.Where(s => sy.Id == id).Select(s => s.Ru).FirstOrDefault());
+    }
 
     var guid = Guid.NewGuid();
-    usedParagraphs[guid] = sentenceIds;
+    usedParagraphs[guid] = sentenceList;
 
     return Results.Ok(new
     {
         id = guid,
         title = songTitle,
-        paragraph = string.Join(" ", paragraphSentences)
+        paragraph = string.Join("\n", paragraphSentences)
     });
 });
 
