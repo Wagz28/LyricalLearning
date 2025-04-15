@@ -24,10 +24,6 @@ builder.Services.AddDbContext<SongsDbContext>(options =>
 
 var app = builder.Build();
 
-// Log that the app has started
-var logger = app.Logger;
-logger.LogInformation("✅ App started logging.");
-
 // Remember which parts of the song are served with unique session IDs
 var usedWords = new Dictionary<Guid, List<int>>();
 var usedSentences = new Dictionary<Guid, List<int>>();
@@ -61,13 +57,12 @@ app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
         .Where(sw => sw.Song_Id == song_id)
         .Select(sw => sw.Word_Id)
         .Distinct()
-        .OrderBy(_ => Guid.NewGuid()) // Randomised order 
+        .OrderBy(_ => Guid.NewGuid())
         .Take(10)
         .ToList();
 
     var wordList = db.Words
         .Where(w => wordIds.Contains(w.Id) && w.En != null)
-        .OrderBy(_ => Guid.NewGuid())
         .ToList();
 
     var guid = Guid.NewGuid();
@@ -89,28 +84,20 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
     .Select(sw => sw.Song_Name)
     .FirstOrDefault();
 
+    // Random rand = new Random();  
+    // int skipper = rand.Next(0, db.SentenceWords.Count()); 
+
     var sentenceIds = db.SentenceWords
         .Where(sw => sw.Song_Id == song_id)
         .Select(sw => sw.Sentence_Id)
         .Distinct()
-        .OrderBy(_ => Guid.NewGuid()) // Randomised order
+        .OrderBy(_ => Guid.NewGuid())
         .Take(3)
         .ToList();
-    
-    // Console.WriteLine("ID list:");
-    // foreach(var id in sentenceIds) {
-    //     Console.WriteLine(id);
-    // }
 
     var sentenceList = db.Sentences
         .Where(s => sentenceIds.Contains(s.Id) && s.En != null)
-        .OrderBy(_ => Guid.NewGuid())
         .ToList();
-
-    // Console.WriteLine("Sentence list:");
-    // foreach(var sen in sentenceList.Select(s => s.En)) {
-    //     Console.WriteLine(sen);
-    // }
 
     var guid = Guid.NewGuid();
     usedSentences[guid] = sentenceList.Select(s => s.Id).ToList();
@@ -143,20 +130,10 @@ app.MapGet("/api/paragraph/{song_id}", (SongsDbContext db, int song_id) =>
         .OrderBy(sw => sw.Sentence_Pst)
         .Select(sw => sw.Sentence_Id)
         .ToList();
-
-    // var paragraphSentences = db.Sentences
-    //     .Where(s => 
-    //         sentences = []
-    //         foreach(id in sentenceList) {
-    //             sentenceList.append()
-    //     })
-    //     .OrderBy(_ => sentenceList.sentence_pst)
-    //     .Select(s => s.Ru)
-    //     .ToList();
     
     var paragraphSentences = new List<string> {};
     foreach(var id in sentenceList) {
-        paragraphSentences.Add(db.Sentences.Where(s => sy.Id == id).Select(s => s.Ru).FirstOrDefault());
+        paragraphSentences.Add(db.Sentences.Where(s => s.Id == id && s.Ru != null).Select(s => s.Ru).FirstOrDefault());
     }
 
     var guid = Guid.NewGuid();
@@ -191,6 +168,10 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapRazorPages();
+
+// Log that the app has started
+var logger = app.Logger;
+logger.LogInformation("✅ App started logging.");
 
 // Test DB connection with error handling
 try
