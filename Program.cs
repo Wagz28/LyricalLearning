@@ -1,10 +1,8 @@
 using Microsoft.Data.SqlClient;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.InteropServices.Swift;
+using LyricalLearning.data;
+using LyricalLearning.Models;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +16,42 @@ builder.Logging.SetMinimumLevel(LogLevel.Trace);  // Set to Trace to capture eve
 // Add Razor Pages (or other services)
 builder.Services.AddRazorPages();
 
+// Song Data SQL Connection String
 builder.Services.AddDbContext<SongsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// User Login SQL Connection String
+builder.Services.AddDbContext<UsersDbContext>(options => 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("UsersString")));
+
+// User Login Setup
+builder.Services.AddIdentity<Users, IdentityRole>(options => 
+{
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 5;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.User.RequireUniqueEmail = true;
+    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedEmail = false;
+    options.SignIn.RequireConfirmedPhoneNumber = false;
+})
+    .AddEntityFrameworkStores<UsersDbContext>()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
+
+app.MapGet("/", context =>
+{
+    if (context.User.Identity != null && context.User.Identity.IsAuthenticated) {
+        context.Response.Redirect("/Index"); // if logged in
+    }
+    else {
+        context.Response.Redirect("/Login"); // if not logged in
+    }
+    return Task.CompletedTask;
+});
 
 // Remember which parts of the song are served with unique session IDs
 var usedWords = new Dictionary<Guid, List<int>>();
@@ -62,7 +91,8 @@ app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
         .ToList();
 
     var wordList = db.Words
-        .Where(w => wordIds.Contains(w.Id) && w.En != null)
+        .Where(w => wordIds.Contains(w.Id) && w.Ru != null)
+        .OrderBy(_ => Guid.NewGuid())
         .ToList();
 
     var guid = Guid.NewGuid();
@@ -72,7 +102,7 @@ app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
     {
         id = guid,
         title = songTitle,
-        words = wordList.Select(w => w.En)
+        words = wordList.Select(w => w.Ru)
     });
 });
 
@@ -96,7 +126,7 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
         .ToList();
 
     var sentenceList = db.Sentences
-        .Where(s => sentenceIds.Contains(s.Id) && s.En != null)
+        .Where(s => sentenceIds.Contains(s.Id) && s.Ru != null)
         .ToList();
 
     var guid = Guid.NewGuid();
@@ -106,7 +136,7 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
     {
         id = guid,
         title = songTitle,
-        sentences = sentenceList.Select(s => s.En)
+        sentences = sentenceList.Select(s => s.Ru)
     });
 });
 
@@ -166,12 +196,15 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapRazorPages();
 
 // Log that the app has started
 var logger = app.Logger;
 logger.LogInformation("✅ App started logging.");
+
 
 // Test DB connection with error handling
 try
@@ -192,6 +225,8 @@ catch (Exception ex)
 {
     logger.LogError(ex, "❌ Unexpected error occurred.");
 }
+
+
 
 app.Run();
 

@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/LyricalLearning.styles.css" asp-append-version="true" />
+    @using LyricalLearning.Models
+    @using Microsoft.AspNetCore.Identity
+    @inject SignInManager<Users> SignInManager
+    @inject UserManager<LyricalLearning.Models.Users> UserManager
 </head>
 <body>
     <header>
@@ -26,6 +30,29 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (SignInManager.IsSignedIn(User)) {
+                            var currentUser = await UserManager.GetUserAsync(User);
+                            var fullName = currentUser?.FullName ?? "User";
+                            
+                            <li class="nav-item">
+                                <span class="nav-link text-dark">Welcome, @fullName</span>
+                            </li>
+                            <li class="nav-item">
+                                <form method="post" asp-page="/Logout" style="display:inline;">
+                                    <button type="submit" class="btn btn-link nav-link">Logout</button>
+                                </form>
+                            </li>
+                        }
+                        else {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Register">Register</a>
+                            </li>
+                            }
                     </ul>
                 </div>
             </div>
