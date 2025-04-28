@@ -62,7 +62,7 @@ app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
         .ToList();
 
     var wordList = db.Words
-        .Where(w => wordIds.Contains(w.Id) && w.En != null)
+        .Where(w => wordIds.Contains(w.Id) && w.Ru != null)
         .OrderBy(_ => Guid.NewGuid())
         .ToList();
 
@@ -73,7 +73,7 @@ app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
     {
         id = guid,
         title = songTitle,
-        words = wordList.Select(w => w.En)
+        words = wordList.Select(w => w.Ru)
     });
 });
 
@@ -97,7 +97,7 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
         .ToList();
 
     var sentenceList = db.Sentences
-        .Where(s => sentenceIds.Contains(s.Id) && s.En != null)
+        .Where(s => sentenceIds.Contains(s.Id) && s.Ru != null)
         .ToList();
 
     var guid = Guid.NewGuid();
@@ -107,7 +107,7 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
     {
         id = guid,
         title = songTitle,
-        sentences = sentenceList.Select(s => s.En)
+        sentences = sentenceList.Select(s => s.Ru)
     });
 });
 
