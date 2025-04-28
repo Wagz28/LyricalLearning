@@ -97,14 +97,37 @@ app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
 
     var guid = Guid.NewGuid();
     usedWords[guid] = wordList.Select(w => w.Id).ToList();
-
     return Results.Ok(new
     {
         id = guid,
         title = songTitle,
-        words = wordList.Select(w => w.Ru)
+        words = wordList.Select(w => new
+        {
+            id = w.Id,
+            ru = w.Ru
+        }).ToList()
     });
 });
+
+app.MapGet("/api/word-answers/{guid}", (SongsDbContext db, Guid guid) =>
+{
+    if (!usedWords.TryGetValue(guid, out var wordIds))
+    {
+        return Results.NotFound();
+    }
+
+    var wordList = db.Words
+        .Where(w => wordIds.Contains(w.Id))
+        .Select(w => new
+        {
+            id = w.Id,
+            en = w.En
+        })
+        .ToList();
+
+    return Results.Ok(new { answers = wordList });
+});
+
 
 // Route for loading song sentences
 app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
@@ -136,7 +159,11 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
     {
         id = guid,
         title = songTitle,
-        sentences = sentenceList.Select(s => s.Ru)
+        sentences = sentenceList.Select(s => new
+        {
+            id = s.Id,
+            ru = s.Ru
+        }).ToList()
     });
 });
 

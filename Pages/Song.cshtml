@@ -47,22 +47,34 @@
                 build.style.fontSize = '1.2rem';
                 chats.appendChild(build);
                 const body = chats.querySelector(`.msg-${count}`);
-                console.log('Mode:', mode);
-                console.log('Type:', type);
+                let pieces; let ids;
                 if (mode === "paragraph") {
                     if (type == 'reply') { 
-                        body.innerText = data; 
-                    } else { 
-                        body.innerText = data.paragraph; 
-                    }
+                        pieces = data; 
+                    } else { pieces = data.paragraph; }
                 } else if (mode === "words" || mode === "sentences") {
                     if (type == 'reply') {
-                        console.log('Data:', data)
-                        body.innerHTML = data; 
-                    } else { 
-                        body.innerHTML = data[mode].join('\n'); 
+                        pieces = data; 
+                    } else {
+                        pieces = data[mode]
+                            .map(bit => bit['ru'])
+                            .join('\n');
+                        ids = data[mode]
+                            .map(bit => bit['id'])
+                            .join('\n');
+                        localStorage.setItem('ids', ids);
                     }
+                } else if (mode === 'ids') { 
+                    pieces = data; @* fetch ids *@
                 }
+                let HTML = ''
+                HTML += pieces
+                    .split('\n')
+                    .map(p => p.trim())
+                    .filter(p => p)
+                    .map(p => `<div>${p}</div>`)
+                    .join('');
+                body.innerHTML += HTML
             }
 
             const styleElement = document.createElement("style");
@@ -110,6 +122,7 @@
                     padding: 10px; 
                     margin-left: 100px !important;
                     background: var(--grey);
+                    counter-reset: line-counter;
                 }
 
                 .songLyrics-reply {
@@ -121,6 +134,13 @@
                     margin-left: 65vw !important;
                     background: var(--salt);
                     color: black;
+                    counter-reset: line-counter;
+                }
+
+                .songLyrics-reply div::before, .songLyrics-bot div::before {
+                    content: counter(line-counter) ". ";
+                    left: 0; top: 0;
+                    counter-increment: line-counter;
                 }
 
                 .msger-inputarea {
@@ -216,8 +236,23 @@
                 const Msg = sendTxt.innerText; sendTxt.innerText = '';
                 const title = document.getElementById('songTitle');
                 const Mode = title.innerHTML.split(':')[0].toLowerCase();
-                console.log(`Sent:\n${Msg}`);
+                const ids = localStorage.getItem('ids');
+                @* fetch(`api/word-answers/${ids}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Song not found.");
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log(data)
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        document.getElementById('errorContainer').style.display = 'block';
+                    }); *@
                 sendTxtMsg(Msg, Mode, 'reply');
+                sendTxtMsg(ids, 'ids', 'bot');
                 setTimeout(newCatch, 1000);
             };
         });
