@@ -63,6 +63,7 @@ app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
 
     var wordList = db.Words
         .Where(w => wordIds.Contains(w.Id) && w.En != null)
+        .OrderBy(_ => Guid.NewGuid())
         .ToList();
 
     var guid = Guid.NewGuid();
