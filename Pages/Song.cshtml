@@ -5,9 +5,16 @@
 }
 
 <div class="container text-center mt-5" id="lyricsContainer" style="display: none;">
-    <a href="/" class="btn btn-secondary mb-4">← Back</a>
-    <h1 id="songTitle" class="display-4 mb-3"></h1>
-    <pre id="songLyrics" class="text-start mx-auto" style="white-space: pre-wrap; max-width: 600px; font-size: 1.2rem;"></pre>
+    <h1 id="songTitle" class="display-4 mb-3"><span><a href="/" class="btn btn-secondary mb-4">← Back</a></span></h1>
+    <div class="chat-box">
+        <div id="chats">
+            <pre id="songLyrics" class="text-start mx-auto" style="white-space: pre-wrap; max-width: 600px; font-size: 1.2rem;"></pre>
+        </div>
+        <div class="msger-inputarea">
+            <div class="msger-input" contenteditable="true">Enter your message...</div>
+            <button type="button" class="msger-send-btn">Send</button>
+        </div>
+    </div>
 </div>
 
 <div class="container text-center mt-5" id="errorContainer" style="display: none;">
@@ -18,6 +25,12 @@
 
 @section Scripts {
     <script>
+        const footer = document.querySelector('footer');
+        if (footer) {
+            footer.style.paddingTop = '1px';
+            footer.style.paddingBottom = '1px';
+            footer.style.lineHeight = "5vh"
+        }
         document.addEventListener("DOMContentLoaded", function () {
             const pathSegments = window.location.pathname.split("/").filter(Boolean);
             const songId = pathSegments[pathSegments.length - 1];
@@ -37,7 +50,7 @@
                     const body = document.getElementById('songLyrics');
                     const container = document.getElementById('lyricsContainer');
 
-                    title.innerText = mode.charAt(0).toUpperCase() + mode.slice(1) + ": " + data.title;
+                    title.innerHTML = mode.charAt(0).toUpperCase() + mode.slice(1) + ": " + data.title + title.innerHTML;
 
                     if (mode === "paragraph") {
                         body.innerText = data.paragraph;
@@ -46,11 +59,114 @@
                     }
 
                     container.style.display = 'block';
+                    
+                    const styleElement = document.createElement("style");
+                    styleElement.innerHTML = `
+                        :root {
+                            --grey: rgb(128 132 140);
+                            --opa-grey: rgba(128 132 140 / 50%);
+                        }
+
+                        .container {
+                            margin-left: 1vw !important;
+                            margin-right: 0vw;
+                            max-width: 95vw;
+                        }
+
+                        #lyricsContainer {
+                            margin-top: 0 !important;
+                            background: var(--opa-grey);
+                            height: 80vh;
+                            margin-left: 1.5vw !important;
+                            margin-right: 2.5vw;
+                        }
+
+                        #lyricsContainer a {
+                            margin-left: 2.5vw;
+                            margin-top: 20px;
+                        }
+
+                        .chat-box {
+                            overflow-x: hidden;
+                            overflow-y: scroll;
+                            height: 65vh;
+                        }
+
+                        .chat-box::-webkit-scrollbar { width: 0; }
+
+                        .chat-box pre {
+                            display: block;
+                            border-radius: 5px;
+                            border-bottom-left-radius: 0px; 
+                            width: 15vw; 
+                            padding: 10px; 
+                            margin-left: 100px !important;
+                            background: var(--grey);
+                        }
+
+                        .msger-inputarea {
+                            display: flex;
+                            padding: 10px;
+                            width: 30vw;
+                            margin-left: 50vw !important;
+                            border-top: var(--border);
+                            background: var(--opa-grey);
+                        }
+
+                        .msger-inputarea * {
+                            padding: 10px;
+                            border: none;
+                            border-radius: 3px;
+                            font-size: 1em;
+                        }
+                        .msger-input {
+                            flex: 1;
+                            background: var(--grey);
+                            counter-reset: line-counter;
+                        }
+                        .msger-input div, 
+                        .msger-input br {
+                            line-height: inherit;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .msger-input div::before {
+                            content: counter(line-counter) ". ";
+                            left: 0; top: 0;
+                            counter-increment: line-counter;
+                        }
+                        .msger-send-btn {
+                            margin-left: 10px;
+                            background: rgb(0, 196, 65);
+                            color: #fff;
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: background 0.23s;
+                        }
+                        .msger-send-btn:hover {
+                            background: rgb(0, 180, 50);
+                        }
+                    `;
+                    document.head.appendChild(styleElement);
                 })
                 .catch(err => {
                     console.error(err);
                     document.getElementById('errorContainer').style.display = 'block';
                 });
+
+            @* FORM HANDLING ---------------------------------------- *@
+            const sendBtn = document.querySelector('.msger-send-btn');
+            const sendTxt = document.querySelector('.msger-input');
+            document.querySelector('.msger-inputarea').addEventListener('keydown', () => {
+                if (['Enter your message...', '', '\n'].includes(sendTxt.innerText)) { 
+                    sendTxt.innerText = ''; sendTxt.innerHTML = "<div></div>"; 
+                };
+            });
+            sendBtn.addEventListener('click', () => sendIt());
+            function sendIt() {
+                const Msg = sendTxt.innerText; sendTxt.innerText = '';
+                console.log(`Sent:\n${Msg}`)
+            };
         });
     </script>
 }

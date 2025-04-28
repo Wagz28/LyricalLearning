@@ -20,6 +20,12 @@
 
 @section Scripts {
     <script>
+        const footer = document.querySelector('footer');
+        if (footer) {
+            footer.style.paddingTop = '1px';
+            footer.style.paddingBottom = '1px';
+            footer.style.lineHeight = "5vh"
+        }
         document.addEventListener("DOMContentLoaded", function () {
             // Fetch the list of songs on page load
             fetch('/api/songs')
