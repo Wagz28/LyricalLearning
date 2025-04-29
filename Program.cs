@@ -24,7 +24,7 @@ builder.Services.AddDbContext<SongsDbContext>(options =>
 builder.Services.AddDbContext<UsersDbContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("UsersString")));
 
-// User Login Setup
+// User Login Conditions
 builder.Services.AddIdentity<Users, IdentityRole>(options => 
 {
     options.Password.RequireNonAlphanumeric = false;
@@ -39,6 +39,15 @@ builder.Services.AddIdentity<Users, IdentityRole>(options =>
 })
     .AddEntityFrameworkStores<UsersDbContext>()
     .AddDefaultTokenProviders();
+
+// Define how to handle cookies
+builder.Services.ConfigureApplicationCookie(options => {
+    options.LoginPath = "/Login"; // redirect unauthenticated users
+    options.AccessDeniedPath = "/AccessDenied"; // Redirect from pages that require authentification
+    options.Cookie.HttpOnly = true; // Ensure the cookies cannot be sent over client side JS
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(1); // timeout for non-persistent cookies (e.g. account when remember me not clicked)
+    options.SlidingExpiration = true; // Don't expire while active
+});
 
 var app = builder.Build();
 
