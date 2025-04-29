@@ -53,8 +53,11 @@ builder.Services.ConfigureApplicationCookie(options => {
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.CheckConsentNeeded = context => true;
-    options.MinimumSameSitePolicy = SameSiteMode.None;
-
+    #if DEBUG
+        options.MinimumSameSitePolicy = SameSiteMode.Lax;
+    #else
+        options.MinimumSameSitePolicy = SameSiteMode.None;
+    #endif
 });
 
 var app = builder.Build();
