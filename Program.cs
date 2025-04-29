@@ -128,19 +128,13 @@ app.MapGet("/api/answers/{mode}/{ids}", (SongsDbContext db, string mode, string 
         .Select(id => int.Parse(id))
         .ToList();
 
-    // Get the word list based on the wordIds
-    // var wordList = db[mode]
-    //     .Where(w => wordIds.Contains(w.Id))
-    //     .Select(w => new { w.Id, w.En })
-    //     .ToList();
-    
     List<(int Id, string? En)> wordList = new();
     if (mode == "words") {
         wordList = db.Words
             .Where(w => wordIds.Contains(w.Id))
             .Select(w => new { w.Id, w.En }).ToList()
             .Select(w => (w.Id, w.En)).ToList();
-    } else if (mode == "sentences") {
+    } else if (mode == "sentences" || mode == "paragraph") {
         wordList = db.Sentences
             .Where(p => wordIds.Contains(p.Id))
             .Select(p => new { p.Id, p.En }).ToList()
@@ -198,9 +192,9 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
 app.MapGet("/api/paragraph/{song_id}", (SongsDbContext db, int song_id) =>
 {
     var songTitle = db.SentenceWords
-    .Where(sw => sw.Song_Id == song_id)
-    .Select(sw => sw.Song_Name)
-    .FirstOrDefault();
+        .Where(sw => sw.Song_Id == song_id)
+        .Select(sw => sw.Song_Name)
+        .FirstOrDefault();
     
     var groupId = db.SentenceWords
         .Where(sw => sw.Song_Id == song_id)
@@ -214,11 +208,16 @@ app.MapGet("/api/paragraph/{song_id}", (SongsDbContext db, int song_id) =>
         .OrderBy(sw => sw.Sentence_Pst)
         .Select(sw => sw.Sentence_Id)
         .ToList();
-    
-    var paragraphSentences = new List<string> {};
-    foreach(var id in sentenceList) {
-        paragraphSentences.Add(db.Sentences.Where(s => s.Id == id && s.Ru != null).Select(s => s.Ru).FirstOrDefault() ?? "[missing]");
-    }
+
+    var paragraphSentences = sentenceList
+        .Select(id => new {
+            id = id,
+            text = db.Sentences
+                .Where(s => s.Id == id && s.Ru != null)
+                .Select(s => s.Ru)
+                .FirstOrDefault() ?? "[missing]"
+        })
+        .ToList();
 
     var guid = Guid.NewGuid();
     usedParagraphs[guid] = sentenceList;
@@ -227,15 +226,9 @@ app.MapGet("/api/paragraph/{song_id}", (SongsDbContext db, int song_id) =>
     {
         id = guid,
         title = songTitle,
-        paragraph = string.Join("\n", paragraphSentences)
+        paragraph = paragraphSentences
     });
 });
-
-
-
-
-
-
 
 
 

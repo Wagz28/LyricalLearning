@@ -48,11 +48,15 @@
                 const body = chats.querySelector(`.msg-${count}`);
                 let pieces; let ids;
                 if (mode === "paragraph") {
-                    if (type == 'reply') { 
+                    if (['reply', 'answers'].includes(type)) { 
                         pieces = data; 
-                    } else { pieces = data.paragraph; }
+                    } else { 
+                        pieces = data.paragraph.map(bit => bit.text).join('\n');
+                        ids = data.paragraph.map(bit => bit.id).join('|');
+                        localStorage.setItem('ids', ids);
+                    }
                 } else if (mode === "words" || mode === "sentences") {
-                    if (type === 'reply' || type === 'answers') {
+                    if (['reply', 'answers'].includes(type)) {
                         pieces = data; 
                     } else {
                         pieces = data[mode]
@@ -240,10 +244,9 @@
                 mx = document.querySelector('#chats > div').childElementCount;
                 if (e.key === 'Enter' && msgArea.querySelectorAll('div').length > mx) { 
                     e.preventDefault();
-                    console.log('Er') 
                 }
-                if (['Enter your message...', '', '\n'].includes(sendTxt.innerText)) { 
-                    sendTxt.innerText = ''; sendTxt.innerHTML = "<div></div>"; 
+                if (['Enter your message...', '', '\n'].includes(sendTxt.innerText)) {
+                    sendTxt.innerText = ''; sendTxt.innerHTML = "<div></div>";
                 };
             });
             sendBtn.addEventListener('click', () => sendIt());
@@ -255,7 +258,7 @@
                 fetch(`/api/answers/${Mode}/${ids}`)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error("Song not found.", response);
+                        throw new Error("Song not found.");
                     }
                     return response.json();
                 })
