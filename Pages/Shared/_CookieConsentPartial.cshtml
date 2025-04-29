@@ -23,6 +23,7 @@
                 button.addEventListener("click", function () {
                     document.cookie = button.getAttribute("data-cookie-string");
                     cookieDiv.style.display = "none";
+                    location.reload();
                 });
             }
         });
