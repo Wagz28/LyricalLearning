@@ -31,15 +31,43 @@
 
     <div class="form-group">
         <label asp-for="Password"></label>
-        <input asp-for="Password" type="password" class="form-control" />
+        <input id="passField1" asp-for="Password" type="password" class="form-control" />
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
 
     <div class="form-group">
         <label asp-for="ConfirmPassword"></label>
-        <input asp-for="ConfirmPassword" type="password" class="form-control" />
+        <input id="passField2" asp-for="ConfirmPassword" type="password" class="form-control" />
         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+
+    <div class="form-group form-check" style="margin-top: -15px; justify-content: center; display: flex;"></div>
+        <input id="showPass" type="checkbox" class="form-check-input"/>
+        <label class="form-check-label" >Show Password</label>
     </div>
 
     <button type="submit" class="btn btn-primary">Register</button>
 </form>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const showPass = document.getElementById("showPass");
+            const passField1 = document.getElementById("passField1");
+            const passField2 = document.getElementById("passField2");
+
+            if (showPass && passField1 && passField2) {
+                showPass.addEventListener('change', function () {
+                    if (this.checked) {
+                        passField1.type = "text";
+                        passField2.type = "text";
+                    }
+                    else {
+                        passField1.type = "password";
+                        passField2.type = "password";
+                    }
+                });
+            }
+        });
+    </script>
+}
