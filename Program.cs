@@ -49,7 +49,17 @@ builder.Services.ConfigureApplicationCookie(options => {
     options.SlidingExpiration = true; // Don't expire while active
 });
 
+// Enforce cookie consent for site usage
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = context => true;
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+
+});
+
 var app = builder.Build();
+
+
 
 app.MapGet("/", context =>
 {
@@ -248,6 +258,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCookiePolicy();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
