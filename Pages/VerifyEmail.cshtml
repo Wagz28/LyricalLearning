@@ -1,0 +1,29 @@
+@page
+@model LyricalLearning.Pages.VerifyEmailModel
+@{
+    ViewData["Title"] = "Verify Your Email";
+}
+
+<h2>Verify Your Email</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="Email" />
+    <input type="hidden" asp-for="Code" />
+
+    <div class="form-group">
+        <label for="codeInput">Verification Code:</label>
+        <input type="text" asp-for="UserEnteredCode" class="form-control" id="codeInput" />
+        <span asp-validation-for="UserEnteredCode" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Verify Email</button>
+
+
+</form>
+
+@if (Model.Code != null) {
+<div class="alert alert-secondary">
+    <strong>DEV MODE:</strong> Paste this code into the box above:
+    <pre>@Model.Code</pre>
+</div>
+}

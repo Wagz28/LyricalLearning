@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using LyricalLearning.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -55,15 +56,18 @@ public class RegisterModel : PageModel
             Email = Email,
             FullName = Name
         };
-        // Console.WriteLine("User object created");
+        
 
         var result = await _userManager.CreateAsync(user, Password);
 
         if (result.Succeeded)
         {
-            // Console.WriteLine("User added to db");
-            await _signInManager.SignInAsync(user, isPersistent: false);
-            return RedirectToPage("/Index");
+            // Verify email
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            
+            // Email functionality TODO
+
+            return RedirectToPage("/VerifyEmail", new { email = Email, code = token});
         }
 
         bool duplicateUserAdded = false;
