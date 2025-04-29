@@ -109,23 +109,44 @@ app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
     });
 });
 
-app.MapGet("/api/word-answers/{guid}", (SongsDbContext db, Guid guid) =>
-{
-    if (!usedWords.TryGetValue(guid, out var wordIds))
-    {
-        return Results.NotFound();
-    }
 
-    var wordList = db.Words
-        .Where(w => wordIds.Contains(w.Id))
-        .Select(w => new
-        {
-            id = w.Id,
-            en = w.En
-        })
+
+app.MapGet("/api/answers/{mode}/{ids}", (SongsDbContext db, string mode, string ids) =>
+{
+    // Split the ids string into a list of integers
+    var wordIds = ids
+        .Split('|', StringSplitOptions.RemoveEmptyEntries)
+        .Select(id => int.Parse(id))
         .ToList();
 
-    return Results.Ok(new { answers = wordList });
+    // Get the word list based on the wordIds
+    // var wordList = db[mode]
+    //     .Where(w => wordIds.Contains(w.Id))
+    //     .Select(w => new { w.Id, w.En })
+    //     .ToList();
+    
+    List<(int Id, string? En)> wordList = new();
+    if (mode == "words") {
+        wordList = db.Words
+            .Where(w => wordIds.Contains(w.Id))
+            .Select(w => new { w.Id, w.En }).ToList()
+            .Select(w => (w.Id, w.En)).ToList();
+    } else if (mode == "sentences") {
+        wordList = db.Sentences
+            .Where(p => wordIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.En }).ToList()
+            .Select(p => (p.Id, p.En)).ToList();
+    } else {
+        return Results.BadRequest($"Unknown mode: {mode}");
+    }
+
+    // Create an ordered list based on the wordIds to match the original order
+    var orderedWords = wordIds
+        .Select(id => wordList.First(w => w.Id == id).En)
+        .ToList();
+
+    // Return the ordered words
+    return Results.Ok(new { answers = orderedWords });
 });
 
 
@@ -136,9 +157,6 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
     .Where(sw => sw.Song_Id == song_id)
     .Select(sw => sw.Song_Name)
     .FirstOrDefault();
-
-    // Random rand = new Random();  
-    // int skipper = rand.Next(0, db.SentenceWords.Count()); 
 
     var sentenceIds = db.SentenceWords
         .Where(sw => sw.Song_Id == song_id)

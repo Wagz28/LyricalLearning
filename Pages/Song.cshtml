@@ -7,9 +7,7 @@
 <div class="container text-center mt-5" id="lyricsContainer" style="display: none;">
     <h1 id="songTitle" class="display-4 mb-3"><span><a href="/" class="btn btn-secondary mb-4">← Back</a></span></h1>
     <div class="chat-box">
-        <div id="chats">
-            @* <pre id="songLyrics" class="text-start mx-auto" style="white-space: pre-wrap; max-width: 600px; font-size: 1.2rem;"></pre> *@
-        </div>
+        <div id="chats"></div>
         <div class="msger-inputarea">
             <div class="msger-input" contenteditable="true">Enter your message...</div>
             <button type="button" class="msger-send-btn">Send</button>
@@ -53,7 +51,7 @@
                         pieces = data; 
                     } else { pieces = data.paragraph; }
                 } else if (mode === "words" || mode === "sentences") {
-                    if (type == 'reply') {
+                    if (type === 'reply' || type === 'answers') {
                         pieces = data; 
                     } else {
                         pieces = data[mode]
@@ -61,11 +59,9 @@
                             .join('\n');
                         ids = data[mode]
                             .map(bit => bit['id'])
-                            .join('\n');
+                            .join('|');
                         localStorage.setItem('ids', ids);
                     }
-                } else if (mode === 'ids') { 
-                    pieces = data; @* fetch ids *@
                 }
                 let HTML = ''
                 HTML += pieces
@@ -125,6 +121,18 @@
                     counter-reset: line-counter;
                 }
 
+                .songLyrics-answers {
+                    display: block;
+                    border-radius: 5px;
+                    border-bottom-left-radius: 0px; 
+                    min-width: 15vw; width: fit-content;
+                    padding: 10px; 
+                    margin-left: 100px !important;
+                    counter-reset: line-counter;
+                    margin-bottom: 1vw;
+                    background: var(--opa-grey);
+                }
+
                 .songLyrics-reply {
                     display: block;
                     border-radius: 5px;
@@ -137,7 +145,7 @@
                     counter-reset: line-counter;
                 }
 
-                .songLyrics-reply div::before, .songLyrics-bot div::before {
+                .songLyrics-reply div::before, .songLyrics-bot div::before, .songLyrics-answers div::before {
                     content: counter(line-counter) ". ";
                     left: 0; top: 0;
                     counter-increment: line-counter;
@@ -226,7 +234,13 @@
             @* FORM HANDLING ---------------------------------------- *@
             const sendBtn = document.querySelector('.msger-send-btn');
             const sendTxt = document.querySelector('.msger-input');
-            document.querySelector('.msger-inputarea').addEventListener('keydown', () => {
+            const msgArea = document.querySelector('.msger-inputarea')
+            msgArea.addEventListener('keydown', (e) => {
+                mx = document.querySelector('#chats > div').childElementCount;
+                if (e.key === 'Enter' && msgArea.querySelectorAll('div').length > mx) { 
+                    e.preventDefault();
+                    console.log('Er') 
+                }
                 if (['Enter your message...', '', '\n'].includes(sendTxt.innerText)) { 
                     sendTxt.innerText = ''; sendTxt.innerHTML = "<div></div>"; 
                 };
@@ -236,23 +250,25 @@
                 const Msg = sendTxt.innerText; sendTxt.innerText = '';
                 const title = document.getElementById('songTitle');
                 const Mode = title.innerHTML.split(':')[0].toLowerCase();
-                const ids = localStorage.getItem('ids');
-                @* fetch(`api/word-answers/${ids}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error("Song not found.");
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log(data)
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        document.getElementById('errorContainer').style.display = 'block';
-                    }); *@
-                sendTxtMsg(Msg, Mode, 'reply');
-                sendTxtMsg(ids, 'ids', 'bot');
+                let ids = localStorage.getItem('ids');
+                fetch(`/api/answers/${Mode}/${ids}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Song not found.", response);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    ids = data.answers.join('\n');
+                    sendTxtMsg(Msg, Mode, 'reply');
+                    sendTxtMsg(ids, Mode, 'answers');
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('errorContainer').style.display = 'block';
+                    sendTxtMsg(Msg, Mode, 'reply');
+                    sendTxtMsg(ids, 'ids', 'bot');
+                });
                 setTimeout(newCatch, 1000);
             };
         });
