@@ -42,10 +42,10 @@ public class RegisterModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        Console.WriteLine("Form received");
+        // Console.WriteLine("Form received");
         if (!ModelState.IsValid)
         {
-            Console.WriteLine("Registration failed");
+            // Console.WriteLine("Registration failed");
             return Page();
         }
 
@@ -55,17 +55,17 @@ public class RegisterModel : PageModel
             Email = Email,
             FullName = Name
         };
-        Console.WriteLine("User object created");
+        // Console.WriteLine("User object created");
 
         var result = await _userManager.CreateAsync(user, Password);
 
         if (result.Succeeded)
         {
-            Console.WriteLine("User added to db");
+            // Console.WriteLine("User added to db");
             await _signInManager.SignInAsync(user, isPersistent: false);
             return RedirectToPage("/Index");
         }
- 
+
         bool duplicateUserAdded = false;
         foreach (var error in result.Errors) {
             if (error.Code == "DuplicateUserName" || error.Code == "DuplicateEmail") {

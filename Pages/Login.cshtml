@@ -24,16 +24,41 @@
     </div>
 
     <div class="form-group">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" type="password" class="form-control" />
+        <label asp-for="Password" style="margin-top: 25px;"></label>
+        <input id="passField" asp-for="Password" type="password" class="form-control" />
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Login</button>
+    <div class="form-group form-check" style="margin-top: -15px; justify-content: center; display: flex;"></div>
+        <input id="showPass" type="checkbox" class="form-check-input"/>
+        <label class="form-check-label" >Show Password</label>
+    </div>
 
     <div class="form-group form-check" style="margin-top: 10px; justify-content: center; display: flex;">
         <input asp-for="RememberMe" class="form-check-input" style="margin-right: 5px;" />
-        <label asp-for="RememberMe" class="form-check-label"></label>
+        <label asp-for="RememberMe" class="form-check-label" style="margin-bottom: 10px;"></label>
     </div>
 
+    <button type="submit" class="btn btn-primary" style="margin-top: 0px;">Login</button>
+
 </form>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const showPass = document.getElementById("showPass");
+            const passField = document.getElementById("passField");
+
+            if (showPass && passField) {
+                showPass.addEventListener('change', function () {
+                    if (this.checked) {
+                        passField.type = "text";
+                    }
+                    else {
+                        passField.type = "password";
+                    }
+                });
+            }
+        });
+    </script>
+}
