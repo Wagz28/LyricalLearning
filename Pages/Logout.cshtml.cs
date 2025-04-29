@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using LyricalLearning.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LyricalLearning.Pages
 {
+    [Authorize]
     public class LogoutModel : PageModel
     {
         private readonly SignInManager<Users> _signInManager;
