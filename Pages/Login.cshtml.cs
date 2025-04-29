@@ -23,19 +23,8 @@ public class LoginModel : PageModel {
     public required string Password {get; set;}
     
     [BindProperty]
-    [Display(Name = "Remember me?")]
+    [Display(Name = "Remember Me?")]
     public bool RememberMe {get; set;}
-
-    // Redirect logged in users to index  
-    // public IActionResult OnGet()
-    // {
-    //     if (User.Identity != null && User.Identity.IsAuthenticated)
-    //     {
-    //         return RedirectToPage("/Index");
-    //     }
-
-    //     return Page();
-    // }
 
     public async Task<IActionResult> OnPostAsync()
     {
