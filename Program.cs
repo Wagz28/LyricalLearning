@@ -96,42 +96,6 @@ app.MapGet("/api/songs", (SongsDbContext db) =>
     return Results.Ok(songs);
 });
 
-// Route for loading song words
-app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
-{
-    var songTitle = db.SentenceWords
-        .Where(sw => sw.Song_Id == song_id)
-        .Select(sw => sw.Song_Name)
-        .FirstOrDefault();
-    
-    var wordIds = db.SentenceWords
-        .Where(sw => sw.Song_Id == song_id)
-        .Select(sw => sw.Word_Id)
-        .Distinct()
-        .OrderBy(_ => Guid.NewGuid())
-        .Take(10)
-        .ToList();
-
-    var wordList = db.Words
-        .Where(w => wordIds.Contains(w.Id) && w.Ru != null)
-        .OrderBy(_ => Guid.NewGuid())
-        .ToList();
-
-    var guid = Guid.NewGuid();
-    usedWords[guid] = wordList.Select(w => w.Id).ToList();
-    return Results.Ok(new
-    {
-        id = guid,
-        title = songTitle,
-        words = wordList.Select(w => new
-        {
-            id = w.Id,
-            ru = w.Ru
-        }).ToList()
-    });
-});
-
-
 
 app.MapGet("/api/answers/{mode}/{ids}", (SongsDbContext db, string mode, string ids) =>
 {
@@ -166,6 +130,42 @@ app.MapGet("/api/answers/{mode}/{ids}", (SongsDbContext db, string mode, string 
 });
 
 
+// Route for loading song words
+app.MapGet("/api/words/{song_id}", (SongsDbContext db, int song_id) =>
+{
+    var songTitle = db.SentenceWords
+        .Where(sw => sw.Song_Id == song_id)
+        .Select(sw => sw.Song_Name)
+        .FirstOrDefault();
+    
+    var wordIds = db.SentenceWords
+        .Where(sw => sw.Song_Id == song_id)
+        .Select(sw => sw.Word_Id)
+        .Distinct()
+        .OrderBy(_ => Guid.NewGuid())
+        .Take(10)
+        .ToList();
+
+    var wordList = db.Words
+        .Where(w => wordIds.Contains(w.Id) && w.Og != null)
+        .OrderBy(_ => Guid.NewGuid())
+        .ToList();
+
+    var guid = Guid.NewGuid();
+    usedWords[guid] = wordList.Select(w => w.Id).ToList();
+    return Results.Ok(new
+    {
+        id = guid,
+        title = songTitle,
+        words = wordList.Select(w => new
+        {
+            id = w.Id,
+            text = w.Og
+        }).ToList()
+    });
+});
+
+
 // Route for loading song sentences
 app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
 {
@@ -183,7 +183,7 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
         .ToList();
 
     var sentenceList = db.Sentences
-        .Where(s => sentenceIds.Contains(s.Id) && s.Ru != null)
+        .Where(s => sentenceIds.Contains(s.Id) && s.Og != null)
         .ToList();
 
     var guid = Guid.NewGuid();
@@ -196,7 +196,7 @@ app.MapGet("/api/sentences/{song_id}", (SongsDbContext db, int song_id) =>
         sentences = sentenceList.Select(s => new
         {
             id = s.Id,
-            ru = s.Ru
+            text = s.Og
         }).ToList()
     });
 });
@@ -226,8 +226,8 @@ app.MapGet("/api/paragraph/{song_id}", (SongsDbContext db, int song_id) =>
         .Select(id => new {
             id = id,
             text = db.Sentences
-                .Where(s => s.Id == id && s.Ru != null)
-                .Select(s => s.Ru)
+                .Where(s => s.Id == id && s.Og != null)
+                .Select(s => s.Og)
                 .FirstOrDefault() ?? "[missing]"
         })
         .ToList();
