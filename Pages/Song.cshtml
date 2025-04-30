@@ -60,7 +60,7 @@
                         pieces = data; 
                     } else {
                         pieces = data[mode]
-                            .map(bit => bit['ru'])
+                            .map(bit => bit['text'])
                             .join('\n');
                         ids = data[mode]
                             .map(bit => bit['id'])
@@ -72,9 +72,51 @@
                 HTML += pieces
                     .split('\n')
                     .map(p => p.trim())
-                    .filter(p => p)
+                    .filter(p => p || "?")
                     .map(p => `<div>${p}</div>`)
                     .join('');
+                if (type === 'answers') { 
+                    const chatDivs = [...document.querySelectorAll('#chats > div')];
+                    HTML = HTML
+                        .replaceAll('<div>', '').split('</div>')
+                        .map(bit => bit.trim()).filter(bit => bit);
+                    
+                    @* ------------ REPLY ANSWERS -------------- *@
+                    console.log(Array.from(chatDivs.at(-2).children))
+                    let replies = Array.from(chatDivs.at(-2).children)
+                        .map(child => child.innerText);
+                    let answers = HTML
+                    console.log("ANSWERS", answers)
+                    console.log("REPlY", replies)
+                    for (let i = 0; i < replies.length; i++) {
+                        let answer; let reply;
+                        try {
+                            answer = answers[i].toLowerCase();
+                            reply = replies[i].toLowerCase();
+                        } catch {
+                            answer = answers[i]
+                            reply = replies[i]
+                        }
+                        if (reply == answer) { replies[i] = (i < 9 ? '  ✅ ' : '✅ ') + replies[i];
+                        }               else { replies[i] = (i < 9 ? '  ❌ ' : '❌ ') + replies[i]; }
+                    }
+                    replies = replies
+                        .map(text => `<div>${text}</div>`)
+                        .join('')
+                    const target = Array.from(document.querySelectorAll('#chats > div')).at(-2);
+                    target.innerHTML = replies
+                    
+                    @* ------------ CORRECT ANSWERS -------------- *@
+                    const OgHTML = Array.from(chatDivs.at(-3).children)
+                        .map(child => child.innerText);
+                    for (let i = 0; i < HTML.length; i++) {
+                        HTML[i] = (i < 9 ? "  " + OgHTML[i] : OgHTML[i]) + " : " + HTML[i];
+                    }
+                    HTML = HTML
+                        .map(text => `<div>${text}</div>`)
+                        .join('')
+                }
+
                 body.innerHTML += HTML
             }
 
