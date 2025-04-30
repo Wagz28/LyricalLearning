@@ -65,11 +65,17 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     #endif
 });
 
-builder.Services.Configure<GmailOptions>(
-    builder.Configuration.GetSection(GmailOptions.GmailOptionsKey));
-
+builder.Services.Configure<GmailOptions>(builder.Configuration.GetSection(GmailOptions.GmailOptionsKey));
 
 builder.Services.AddScoped<IMailService, GmailService>();
+
+builder.Configuration.AddEnvironmentVariables();
+builder.Configuration["GmailOptions:Password"] =
+    Environment.GetEnvironmentVariable("GMAIL_APP_PASSWORD")
+    ?? throw new InvalidOperationException("GMAIL_APP_PASSWORD not set.");
+
+builder.Services.Configure<GmailOptions>(builder.Configuration.GetSection("GmailOptions"));
+
 
 var app = builder.Build();
 
