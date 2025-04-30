@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using Email.API;
+using Email.API.IMailService;
 using LyricalLearning.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +13,13 @@ public class RegisterModel : PageModel
 {
     private readonly UserManager<Users> _userManager;
     private readonly SignInManager<Users> _signInManager;
+    private readonly IMailService _mailService;
 
-    public RegisterModel(UserManager<Users> userManager, SignInManager<Users> signInManager)
+    public RegisterModel(UserManager<Users> userManager, SignInManager<Users> signInManager, IMailService mailService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _mailService = mailService;
     }
 
     [BindProperty]
@@ -66,7 +70,13 @@ public class RegisterModel : PageModel
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             
             // Email functionality TODO
+            var link = Url.Page("/VerifyEmail", null, new { email = Email, emailCode = token }, Request.Scheme);
 
+            await _mailService.SendEmailAsync(new SendEmailRequest(
+                Email,
+                "Verify Your Email",
+                $"Please click this link to verify your email: {link}"
+            ));
             return RedirectToPage("/VerifyEmail", new { email = Email, code = token});
         }
 

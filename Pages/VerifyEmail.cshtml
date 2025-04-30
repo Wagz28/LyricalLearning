@@ -16,14 +16,14 @@
         <span asp-validation-for="UserEnteredCode" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Verify Email</button>
+    <button type="submit" class="btn btn-primary" style="margin-top: 10px; margin-bottom: 10px">Verify Email</button>
 
 
 </form>
 
 @if (Model.Code != null) {
 <div class="alert alert-secondary">
-    <strong>DEV MODE:</strong> Paste this code into the box above:
+    <strong>DEV MODE:</strong> Paste this code into the box above if you have not received an email (may be in junk):
     <pre>@Model.Code</pre>
 </div>
 }

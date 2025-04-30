@@ -3,6 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using LyricalLearning.data;
 using LyricalLearning.Models;
 using Microsoft.AspNetCore.Identity;
+using Email.API.Options;
+using email.API;
+using Email.API.IMailService;
+using email.API.GmailServices;
+using Email.API;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,9 +65,13 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     #endif
 });
 
+builder.Services.Configure<GmailOptions>(
+    builder.Configuration.GetSection(GmailOptions.GmailOptionsKey));
+
+
+builder.Services.AddScoped<IMailService, GmailService>();
+
 var app = builder.Build();
-
-
 
 app.MapGet("/", context =>
 {
