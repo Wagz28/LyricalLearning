@@ -26,12 +26,20 @@ namespace LyricalLearning.Pages
         [Required(ErrorMessage = "You must enter the code you received.")]
         public string UserEnteredCode { get; set; } = "";
 
-        public IActionResult OnGet(string? email, string? code) {
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(code)) {
+        public IActionResult OnGet(string? email, string? code, string? emailCode) {
+            if (string.IsNullOrEmpty(email)) {
                 return BadRequest("Missing verification info.");
             }
             Email = email;
-            Code = code;
+
+            if (!string.IsNullOrEmpty(code)) {
+                Code = code;
+            }
+            if (!string.IsNullOrEmpty(emailCode)) {
+                Code = emailCode;
+                UserEnteredCode = emailCode;
+            }
+            
             return Page();
 
         }
