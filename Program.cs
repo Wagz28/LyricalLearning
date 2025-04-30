@@ -23,11 +23,11 @@ builder.Services.AddRazorPages();
 
 // Song Data SQL Connection String
 builder.Services.AddDbContext<SongsDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(Environment.GetEnvironmentVariable("SQL_DEFAULT_CONNECTION")));
 
 // User Login SQL Connection String
 builder.Services.AddDbContext<UsersDbContext>(options => 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("UsersString")));
+    options.UseSqlServer(Environment.GetEnvironmentVariable("SQL_USERS_CONNECTION")));
 
 // User Login Conditions
 builder.Services.AddIdentity<Users, IdentityRole>(options => 
@@ -286,7 +286,7 @@ logger.LogInformation("✅ App started logging.");
 try
 {
     // Retrieve connection string from configuration
-    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    string? connectionString = Environment.GetEnvironmentVariable("SQL_DEFAULT_CONNECTION")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         
     using SqlConnection connection = new(connectionString);
