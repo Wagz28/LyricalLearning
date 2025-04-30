@@ -82,12 +82,9 @@
                         .map(bit => bit.trim()).filter(bit => bit);
                     
                     @* ------------ REPLY ANSWERS -------------- *@
-                    console.log(Array.from(chatDivs.at(-2).children))
                     let replies = Array.from(chatDivs.at(-2).children)
                         .map(child => child.innerText);
                     let answers = HTML
-                    console.log("ANSWERS", answers)
-                    console.log("REPlY", replies)
                     for (let i = 0; i < replies.length; i++) {
                         let answer; let reply;
                         try {
@@ -283,7 +280,9 @@
             const sendTxt = document.querySelector('.msger-input');
             const msgArea = document.querySelector('.msger-inputarea')
             msgArea.addEventListener('keydown', (e) => {
-                mx = document.querySelector('#chats > div').childElementCount;
+                let mx;
+                try { mx = [...document.querySelectorAll('#chats > div')].at(-1).children.length; 
+                } catch { mx = document.querySelector('#chats > div').childElementCount;}
                 if (e.key === 'Enter' && msgArea.querySelectorAll('div').length > mx) { 
                     e.preventDefault();
                 }
